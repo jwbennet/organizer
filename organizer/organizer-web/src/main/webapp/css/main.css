@@ -1,0 +1,13 @@
+div.success-message {
+	font-weight: bold;
+	color: green;
+}
+
+div.error-message {
+	font-weight: bold;
+	color: red;
+}
+
+div.button-center span span.ui-icon {
+	top: 50%;
+}
