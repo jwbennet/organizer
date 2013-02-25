@@ -23,6 +23,27 @@
 <script type="text/javascript" src="http://dev.jtsage.com/cdn/datebox/latest/jqm-datebox.mode.calbox.min.js"></script>
 <script type="text/javascript" src="${pageContext.request.contextPath}/js/jqm-datebox-1.1.0.mode.datebox.js"></script>
 <script type="text/javascript">
+	$.fn.serializeObject = function() {
+   		var o = {};
+   		var a = this.serializeArray();
+   		$.each(a, function() {
+       	if (o[this.name]) {
+        	if (!o[this.name].push) {
+              	o[this.name] = [o[this.name]];
+           	}
+           	o[this.name].push(this.value || '');
+       	} else {
+           	o[this.name] = this.value || '';
+       	}
+   	});
+   	$('div').live('pagehide', function (event, ui) { 
+   	    var page = jQuery(event.target);
+   	    if (page.attr('data-cache') == 'never') { 
+   	        page.remove(); 
+   	    }; 
+   	});
+   	return o;
+	};
 	$(document).ready(function() {
 		if($.browser.msie) {
 			window.location = '${pageContext.request.contextPath}/errors/ie.html';
@@ -32,7 +53,7 @@
 </script>
 </head>
 <body>
-<div data-role="page" class="type-home">
+<div data-role="page" data-cache="never" class="type-home">
 	<div data-role="header">
 		<a href="#" class="ui-btn-left" data-icon="back" data-iconpos="notext" data-iconshadow="false" data-rel="back">Back</a>
 		<h1 id="${prefix}-header-text">${title}</h1>

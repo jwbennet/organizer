@@ -21,7 +21,15 @@ import org.hibernate.validator.constraints.Length;
 import org.joda.time.DateTime;
 
 import com.bbtech.organizer.server.dao.NoteDao;
+import com.bbtech.organizer.server.deserializers.DateTimeDeserializer;
+import com.bbtech.organizer.server.deserializers.PersonDeserializer;
+import com.bbtech.organizer.server.serializers.DateTimeSerializer;
+import com.bbtech.organizer.server.serializers.PersonSerializer;
+import com.bbtech.organizer.server.util.JsonConverter;
 import com.bbtech.organizer.server.util.ServiceLocator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 @Entity
 @Table(name="notes")
@@ -34,31 +42,37 @@ public class Note {
 
 	@Id
 	@GeneratedValue
-    @Column(name="id")
+	@Column(name="id")
 	private Long id;
-	
+
 	@Column(name="text")
-	@Length(min = 5, message = "Note text must be at least 5 characters.")
+	@Length(min = 1, message = "Note text must not be blank.")
 	private String text;
-	
+
 	@Column(name="crte_dt")
 	@Type(type="org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+	@JsonSerialize(using = DateTimeSerializer.class)
+	@JsonDeserialize(using = DateTimeDeserializer.class)
 	private DateTime creationDate;
-	
+
 	@Column(name="updt_dt")
 	@Type(type="org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+	@JsonSerialize(using = DateTimeSerializer.class)
+	@JsonDeserialize(using = DateTimeDeserializer.class)
 	private DateTime updateDate;
-	
+
 	@ManyToOne(fetch=FetchType.LAZY, cascade=CascadeType.ALL)
 	@JoinTable(
-		name="person_to_note",
-		joinColumns=@JoinColumn(name="note_id"),
-		inverseJoinColumns=@JoinColumn(name="person_id"))
+			name="person_to_note",
+			joinColumns=@JoinColumn(name="note_id"),
+			inverseJoinColumns=@JoinColumn(name="person_id"))
+	@JsonSerialize(using = PersonSerializer.class)
+	@JsonDeserialize(using = PersonDeserializer.class)
 	private Person person;
-	
+
 	@Transient
 	private String wikiText;
-	
+
 	@PrePersist
 	@PreUpdate
 	public void updateTimestamps() {
@@ -67,35 +81,40 @@ public class Note {
 			this.setCreationDate(new DateTime());
 		}
 	}
-	
+
+	@JsonIgnore
+	public String getJson() {
+		return JsonConverter.convert(this);
+	}
+
 	public Long getId() {
 		return id;
 	}
-	
+
 	public void setId(Long id) {
 		this.id = id;
 	}
-	
+
 	public String getText() {
 		return text;
 	}
-	
+
 	public void setText(String text) {
 		this.text = text;
 	}
-	
+
 	public DateTime getCreationDate() {
 		return creationDate;
 	}
-	
+
 	public void setCreationDate(DateTime creationDate) {
 		this.creationDate = creationDate;
 	}
-	
+
 	public DateTime getUpdateDate() {
 		return updateDate;
 	}
-	
+
 	public void setUpdateDate(DateTime updateDate) {
 		this.updateDate = updateDate;
 	}
@@ -107,7 +126,7 @@ public class Note {
 	public void setPerson(Person person) {
 		this.person = person;
 	}
-	
+
 	public String getWikiText() {
 		if(this.wikiText == null) {
 			this.wikiText = ServiceLocator.getWikiService().parse(this.getText());

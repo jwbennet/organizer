@@ -2,6 +2,7 @@ package com.bbtech.organizer.server.util;
 
 import org.springframework.context.ApplicationContext;
 
+import com.bbtech.organizer.server.services.PersonService;
 import com.bbtech.organizer.server.services.WikiService;
 
 public final class ServiceLocator {
@@ -14,6 +15,10 @@ public final class ServiceLocator {
 
 	public static WikiService getWikiService() {
 		return INSTANCE.getApplicationContext().getBean(WikiService.class);
+	}
+	
+	public static PersonService getPersonService() {
+		return INSTANCE.getApplicationContext().getBean(PersonService.class);
 	}
 
 

@@ -4,10 +4,6 @@
 <%@ attribute name="note" required="true" description="The note to display" type="com.bbtech.organizer.server.entities.Note" %>
 
 			<li id="note-${note.id}" class="note-container">
-				<form id="note-form-${note.id}">
-					<input type="hidden" id="note-id-${note.id}" name="id" value="${note.id}" />
-					<input type="hidden" id="note-text-${note.id}" name="text" value="${note.text}" />
-				</form>
 				<div id="display-note-${note.id}" data-role="none" style="width: 50%; float: left;">
 					${note.wikiText}
 				</div>

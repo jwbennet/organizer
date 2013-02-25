@@ -13,7 +13,7 @@
 	</context-param>
 
 	<listener>
-		<listener-class>com.bbtech.server.web.listeners.LoggingInitListener</listener-class>
+		<listener-class>com.bbtech.organizer.server.web.listeners.LoggingInitListener</listener-class>
 	</listener>
 	<listener>
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
@@ -39,7 +39,7 @@
 	
 	<filter>
 		<filter-name>whitespace-filter</filter-name>
-		<filter-class>com.bbtech.server.web.filters.WhitespaceFilter</filter-class>
+		<filter-class>com.bbtech.organizer.server.web.filters.WhitespaceFilter</filter-class>
 	</filter>
 	
 	<filter-mapping>

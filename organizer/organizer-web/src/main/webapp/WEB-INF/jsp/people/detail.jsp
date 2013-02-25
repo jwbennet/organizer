@@ -19,7 +19,7 @@
 <note:form-dialogs />
 </jsp:attribute>
 <jsp:body>
-		<note:form-js />
+		<note:form-js notesJson="${person.notesJson}" />
 		<div id="note-messages" style="min-height: 20px;">
 			<div id="note-success-message" class="success-message" style="display: none;"></div>
 			<div id="note-error-message" class="error-message" style="display: none; white-space: pre;"></div>

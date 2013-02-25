@@ -1,23 +1,18 @@
 <%@ tag language="java" pageEncoding="UTF-8"%>
-<%@ include file="/WEB-INF/jsp/people/tldHeader.jsp"%>
+<%@ include file="/WEB-INF/jsp/notes/tldHeader.jsp"%>
+
+<%@ attribute name="notesJson" required="false" description="The notes include as a model" %>
+
 <script type="text/javascript">
-function submitNoteForm(id, callback) {
-	var data;
-	if(id) {
-		data = $('#note-form-' + id).formSerialize();
-	} else {
-		data = $('#note-form').formSerialize();
-	}
-	$.ajax({
-		type: 'POST',
-		url: '${pageContext.request.contextPath}/notes/update',
-		data: data,
-		success: callback,
-		error: noteFormError
-	});
-}
-function updateNoteCallback(data) {
-	var resp = $.parseJSON(data);
+<c:choose>
+<c:when test="${not empty notesJson}">
+var notesList = ${notesJson};
+</c:when>
+<c:otherwise>
+var notesList = {};
+</c:otherwise>
+</c:choose>
+function updateNoteCallback(resp) {
 	if(resp.success) {
 		$.ajax({
 			type: 'GET',
@@ -34,6 +29,7 @@ function updateNoteCallback(data) {
 				},
 			error: noteFormError
 		});
+		notesList[resp.id] = resp.object;
 	} else {
 		noteErrorMessage(resp.message);
 	}
@@ -52,12 +48,13 @@ function createNote() {
 function submitNewNote() {
 	hideNoteMessages();
 	$('#notes-not-found').remove();
-	submitNoteForm(0, updateNoteCallback);
+	var data = $('#note-form').formSerialize();
+	$.ajax({ type: 'POST', url: '${pageContext.request.contextPath}/notes', data: data, success: updateNoteCallback, error: noteFormError });
 	return false;
 }
 function editNote(id) {
 	cancelNoteForm();
-	$('#note-form-text').val($('#note-text-' + id).val());
+	$('#note-form-text').val(notesList[id].text);
 	$('#note-form-text').trigger('keyup');
 	$('#note-form-submit').bind('click', function() { submitEditNote(id); });
 	$('#note-form-cancel').bind('click', function() { cancelNoteForm(); });
@@ -69,24 +66,18 @@ function editNote(id) {
 	$('#note-form-note').focus();
 }
 function submitEditNote(id) {
-	$('#note-text-' + id).val($('#note-form-text').val());
-	submitNoteForm(id, updateNoteCallback);
+	var data = JSON.stringify($.extend({}, notesList[id], $('#note-form').serializeObject()));
+	$.ajax({ type: 'PUT', url: '${pageContext.request.contextPath}/notes/' + id, contentType: 'application/json', data: data, success: updateNoteCallback, error: noteFormError });
 	return false;
 }
 function confirmDeleteNote(id) {
 	$('#delete-note-confirm').bind('click', function () { deleteNote(id); } );
 }
 function deleteNote(id) {
-	$.ajax({
-		type: 'DELETE',
-		url: '${pageContext.request.contextPath}/notes/' + id,
-		success: deleteNoteCallback,
-		error: noteFormError
-	});
+	$.ajax({ type: 'DELETE', url: '${pageContext.request.contextPath}/notes/' + id, success: deleteNoteCallback, error: noteFormError });
 	return false;
 }
-function deleteNoteCallback(data) {
-	var resp = $.parseJSON(data);
+function deleteNoteCallback(resp) {
 	if(resp.success) {
 		var id = resp.id;
 		$('#note-' + id).delay(500).fadeOut(400, function() { $('#note-' + id).remove(); $('#note-list').listview('refresh'); });
@@ -103,7 +94,6 @@ function cancelNoteForm() {
 	$('#note-form-container').hide();
 	$('#note-form-container').appendTo('#note-form-holder');
 	$('#note-form').resetForm();
-	$('#note-form-state').val('').selectmenu('refresh');
 	$('#note-list').listview('refresh');
 	$('#note-form-submit').unbind('click');
 	$('#note-form-cancel').unbind('click');

@@ -12,69 +12,42 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.bbtech.organizer.server.entities.Note;
 import com.bbtech.organizer.server.services.NoteService;
 import com.bbtech.organizer.server.services.PersonService;
+import com.bbtech.organizer.server.util.JsonResponse;
 import com.google.common.base.CaseFormat;
-
-import flexjson.JSONSerializer;
 
 @Controller
 @RequestMapping("/notes")
 public class NoteController {
 
+	private static final String NOTE_CREATED_MESSAGE = "Note created";
+	private static final String NOTE_UPDATED_MESSAGE = "Note updated";
+	private static final String NOTE_DELETED_MESSAGE = "Note deleted";
+
 	@Autowired
 	private NoteService noteService;
-	
+
 	@Autowired
 	private PersonService personService;
-	
-	@RequestMapping(value = "update", method = RequestMethod.POST)
+
+	@RequestMapping(value = "", method = RequestMethod.POST)
 	@Transactional
-	public ModelAndView update(@ModelAttribute("note") @Valid Note note, BindingResult result, ModelAndView model) {
-		String message = "";
-		boolean success = false;
+	public @ResponseBody JsonResponse create(@ModelAttribute("note") @Valid Note note, BindingResult result) {
 		if(result.hasErrors()) {
-			message = "Errors found:\\n";
-			Map<String, String> errors = new HashMap<String, String>();
-			for(FieldError error : result.getFieldErrors()) {
-				System.out.println(error.getObjectName() + " " + error.getField() + ": " + error.getDefaultMessage());
-				errors.put(CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, error.getField()), error.getDefaultMessage());
-				message += error.getDefaultMessage() + "\\n";
-			}
-			System.out.println(new JSONSerializer().serialize(errors));
+			return processErrors(result);
 		} else {
-			if(note.getId() == null) {
-				message = "Note created";
-			} else {
-				message = "Note updated";
-			}
-			success = true;
-			note = noteService.saveNote(note);
-		}
-		model.addObject("id", note.getId());
-		System.out.println("BENNETT: success = " + success);
-		model.addObject("success", success);
-		System.out.println("BENNETT: message = " + message);
-		model.addObject("message", message);
-		model.setViewName("notes/form-response");
-		return model;
-	}
-	
-	@ModelAttribute("note")
-	public Note getNote(@RequestParam(value = "id", required = false) Long id) {
-		if(id == null) {
-			return new Note();
-		} else {
-		    return this.noteService.getNote(id);
+			return saveNote(note, NOTE_CREATED_MESSAGE);
 		}
 	}
-	
+
 	@RequestMapping(value = "{noteId}", method = RequestMethod.GET)
 	@Transactional
 	public ModelAndView display(@PathVariable Long noteId, ModelAndView model) {
@@ -83,21 +56,49 @@ public class NoteController {
 		model.setViewName("notes/display");
 		return model;
 	}
-	
+
+	@RequestMapping(value = "{noteId}.json", method = RequestMethod.GET, produces = "application/json")
+	@Transactional
+	public @ResponseBody Note getNoteJson(@PathVariable Long noteId) {
+		Note note = noteService.getNote(noteId);
+		return note;
+	}
+
+	@RequestMapping(value = "{noteId}", method = RequestMethod.PUT, consumes = "application/json")
+	@Transactional
+	public @ResponseBody JsonResponse update(@RequestBody @Valid Note note, BindingResult result) {
+		if(result.hasErrors()) {
+			return processErrors(result);
+		} else {
+			return saveNote(note, NOTE_UPDATED_MESSAGE);
+		}
+	}
+
 	@RequestMapping(value = "{noteId}", method = RequestMethod.DELETE)
 	@Transactional
-	public ModelAndView delete(@PathVariable Long noteId, ModelAndView model) {
+	public @ResponseBody JsonResponse delete(@PathVariable Long noteId) {
 		noteService.deleteNoteById(noteId);
-		model.addObject("id", noteId);
-		model.addObject("success", true);
-		model.addObject("message", "Note deleted");
-		model.setViewName("notes/form-response");
-		return model;
+		return new JsonResponse(noteId, true, NOTE_DELETED_MESSAGE);
 	}
-	
-//	@ExceptionHandler(Exception.class)
-//	public String handleMyException(Exception  exception) {
-//		exception.printStackTrace();
-//		return "index";
-//	}
+
+	protected JsonResponse saveNote(Note note, String message) {
+		note = noteService.saveNote(note);
+		return new JsonResponse(note.getId(), true, message, note);
+	}
+
+	protected JsonResponse processErrors(BindingResult result) {
+		String message = "Errors found:\n";
+		Map<String, String> errors = new HashMap<String, String>();
+		for(FieldError error : result.getFieldErrors()) {
+			errors.put(CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, error.getField()), error.getDefaultMessage());
+			message += error.getDefaultMessage() + "\n";
+		}
+		return new JsonResponse(0L, false, message, errors);
+	}
+
+	//	@ExceptionHandler(Exception.class)
+	//	public String handleMyException(Exception exception) {
+	//		exception.printStackTrace();
+	//		return "index";
+	//	}
 }

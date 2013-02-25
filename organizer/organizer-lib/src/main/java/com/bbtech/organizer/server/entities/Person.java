@@ -1,7 +1,9 @@
 package com.bbtech.organizer.server.entities;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -24,6 +26,8 @@ import org.joda.time.DateTime;
 import com.bbtech.organizer.server.dao.PersonDao;
 import com.bbtech.organizer.server.transformers.DateTransformer;
 import com.bbtech.organizer.server.transformers.ToStringTransformer;
+import com.bbtech.organizer.server.util.JsonConverter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import flexjson.JSONSerializer;
 
@@ -192,6 +196,15 @@ public class Person {
 			}
 		}
 		return null;
+	}
+	
+	@JsonIgnore
+	public String getNotesJson() {
+		Map<Long, Note> noteMap = new HashMap<Long, Note>();
+		for(Note note : this.notes) {
+			noteMap.put(note.getId(), note);
+		}
+		return JsonConverter.convert(noteMap);
 	}
 
 	public Long getId() {
