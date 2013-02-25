@@ -1,9 +1,9 @@
-div.success-message {
+.success-message {
 	font-weight: bold;
 	color: green;
 }
 
-div.error-message {
+.error-message {
 	font-weight: bold;
 	color: red;
 }

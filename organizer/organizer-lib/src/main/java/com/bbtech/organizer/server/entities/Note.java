@@ -18,7 +18,6 @@ import javax.persistence.Transient;
 
 import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotBlank;
 import org.joda.time.DateTime;
 
 import com.bbtech.organizer.server.dao.NoteDao;
@@ -41,10 +40,6 @@ public class Note {
 	@Column(name="text")
 	@Length(min = 5, message = "Note text must be at least 5 characters.")
 	private String text;
-	
-	@Transient
-	@NotBlank
-	private String autoFail;
 	
 	@Column(name="crte_dt")
 	@Type(type="org.jadira.usertype.dateandtime.joda.PersistentDateTime")
