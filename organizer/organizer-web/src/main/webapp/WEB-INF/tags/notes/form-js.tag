@@ -12,11 +12,12 @@ var notesList = ${notesJson};
 var notesList = {};
 </c:otherwise>
 </c:choose>
+var baseNoteUrl = '${pageContext.request.contextPath}/notes';
 function updateNoteCallback(resp) {
 	if(resp.success) {
 		$.ajax({
 			type: 'GET',
-			url: '${pageContext.request.contextPath}/notes/' + resp.id,
+			url: baseNoteUrl + '/' + resp.id,
 			success:
 				function(data) {
 					var id = resp.id;
@@ -48,8 +49,8 @@ function createNote() {
 function submitNewNote() {
 	hideNoteMessages();
 	$('#notes-not-found').remove();
-	var data = $('#note-form').formSerialize();
-	$.ajax({ type: 'POST', url: '${pageContext.request.contextPath}/notes', data: data, success: updateNoteCallback, error: noteFormError });
+	var data = JSON.stringify($('#note-form').serializeObject());
+	$.ajax({ type: 'POST', url: baseNoteUrl, contentType: 'application/json', data: data, success: updateNoteCallback, error: noteFormError });
 	return false;
 }
 function editNote(id) {
@@ -67,14 +68,14 @@ function editNote(id) {
 }
 function submitEditNote(id) {
 	var data = JSON.stringify($.extend({}, notesList[id], $('#note-form').serializeObject()));
-	$.ajax({ type: 'PUT', url: '${pageContext.request.contextPath}/notes/' + id, contentType: 'application/json', data: data, success: updateNoteCallback, error: noteFormError });
+	$.ajax({ type: 'PUT', url: baseNoteUrl + '/' + id, contentType: 'application/json', data: data, success: updateNoteCallback, error: noteFormError });
 	return false;
 }
 function confirmDeleteNote(id) {
 	$('#delete-note-confirm').bind('click', function () { deleteNote(id); } );
 }
 function deleteNote(id) {
-	$.ajax({ type: 'DELETE', url: '${pageContext.request.contextPath}/notes/' + id, success: deleteNoteCallback, error: noteFormError });
+	$.ajax({ type: 'DELETE', url: baseNoteUrl + '/' + id, success: deleteNoteCallback, error: noteFormError });
 	return false;
 }
 function deleteNoteCallback(resp) {
