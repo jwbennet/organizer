@@ -24,10 +24,10 @@
 			<div id="note-success-message" class="success-message" style="display: none;"></div>
 			<div id="note-error-message" class="error-message" style="display: none; white-space: pre;"></div>
 		</div>
-		<note:list notes="${person.notes}" />
-		<note:form personId="${person.id}" />
+		<note:list notes="${person.notes}" personId="${person.id}" />
+		<note:form />
 		<div data-role="controlgroup">
-			<a href="#" data-role="button" data-theme="b" data-icon="plus" onclick="createNote();">Add note</a>
+			<a href="#" data-role="button" data-theme="b" data-icon="plus" onclick="createNote(${person.id});">Add note</a>
 		</div>
 </jsp:body>
 </t:page>

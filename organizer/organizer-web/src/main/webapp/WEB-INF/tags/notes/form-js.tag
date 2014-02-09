@@ -17,7 +17,7 @@ function updateNoteCallback(resp) {
 	if(resp.success) {
 		$.ajax({
 			type: 'GET',
-			url: baseNoteUrl + '/' + resp.id,
+			url: baseNoteUrl + '/' + resp.id + '/display',
 			success:
 				function(data) {
 					var id = resp.id;
@@ -35,14 +35,19 @@ function updateNoteCallback(resp) {
 		noteErrorMessage(resp.message);
 	}
 }
-function createNote() {
+function createNote(personId, logId) {
 	cancelNoteForm();
+	if(personId === undefined) {
+		personId = 0;
+	}
+	$('#note-form-person-id').val(personId);
+	$('#note-form-log-id').val(logId);
 	$('#notes-not-found').hide();
 	$('#note-form-submit').bind('click', function() { submitNewNote(); });
 	$('#note-form-cancel').bind('click', function() { cancelNoteForm(); });
-	$('#note-form-container').appendTo('#note-list');
+	$('#note-form-container').appendTo('#note-list-' + personId);
 	$('#note-form-container').fadeIn();
-	$('#note-list').listview('refresh');
+	$('#note-list-' + personId).listview('refresh');
 	hideNoteMessages();
 	$('#note-form-note').focus();
 }
@@ -55,6 +60,7 @@ function submitNewNote() {
 }
 function editNote(id) {
 	cancelNoteForm();
+	$('#note-form-person-id').val(notesList[id].person);
 	$('#note-form-text').val(notesList[id].text);
 	$('#note-form-text').trigger('keyup');
 	$('#note-form-submit').bind('click', function() { submitEditNote(id); });
@@ -62,7 +68,7 @@ function editNote(id) {
 	$('#note-form-container').insertAfter('#note-' + id);
 	$('#note-' + id).hide();
 	$('#note-form-container').show();
-	$('#note-list').listview('refresh');
+	$('#note-list-' + notesList[id].person).listview('refresh');
 	hideNoteMessages();
 	$('#note-form-note').focus();
 }
@@ -81,7 +87,11 @@ function deleteNote(id) {
 function deleteNoteCallback(resp) {
 	if(resp.success) {
 		var id = resp.id;
-		$('#note-' + id).delay(500).fadeOut(400, function() { $('#note-' + id).remove(); $('#note-list').listview('refresh'); });
+		$('#note-' + id).delay(500).fadeOut(400, function() {
+													 var elem = $('#note-' + id).parents('ul.note-list');
+													 $('#note-' + id).remove();
+													 $(elem).listview('refresh');
+												 });
 		noteSuccessMessage(resp.message);
 	} else {
 		noteErrorMessage(resp.message);
@@ -95,7 +105,8 @@ function cancelNoteForm() {
 	$('#note-form-container').hide();
 	$('#note-form-container').appendTo('#note-form-holder');
 	$('#note-form').resetForm();
-	$('#note-list').listview('refresh');
+	$('#note-form-log-id').val('');
+	$('.note-list').listview('refresh');
 	$('#note-form-submit').unbind('click');
 	$('#note-form-cancel').unbind('click');
 }

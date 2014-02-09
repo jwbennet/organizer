@@ -1,3 +1,13 @@
+li.not-found {
+	font-size: 14px;
+	font-weight: normal;
+	font-style: italic;
+}
+
+li.button-divider {
+	padding: 0 15px;
+}
+
 .success-message {
 	font-weight: bold;
 	color: green;
@@ -10,4 +20,15 @@
 
 div.button-center span span.ui-icon {
 	top: 50%;
+}
+
+table.data th {
+	font-size: 14px;
+	padding-right: 15px;
+	vertical-align: top;
+}
+
+table.data td {
+	font-size: 14px;
+	font-weight: normal;
 }

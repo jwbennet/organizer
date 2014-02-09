@@ -24,12 +24,8 @@ import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
 import com.bbtech.organizer.server.dao.PersonDao;
-import com.bbtech.organizer.server.transformers.DateTransformer;
-import com.bbtech.organizer.server.transformers.ToStringTransformer;
 import com.bbtech.organizer.server.util.JsonConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import flexjson.JSONSerializer;
 
 @Entity
 @Table(name="people")
@@ -106,13 +102,6 @@ public class Person {
 		}
 	}
 	
-	public String toJson() {
-        return new JSONSerializer().exclude("*.class")
-        		                   .transform(new DateTransformer(), DateTime.class)
-        		                   .transform(new ToStringTransformer(), Name.class)
-        		                   .serialize(this);
-    }
-	
 	public List<Name> getActiveNames() {
 		List<Name> activeNames = new ArrayList<Name>();
 		for(Name name : this.getNames()) {
@@ -139,6 +128,15 @@ public class Person {
 		} else {
 			return primaryName.getDisplayName();
 		}
+	}
+	
+	@JsonIgnore
+	public String getNamesJson() {
+		Map<Long, Name> nameMap = new HashMap<Long, Name>();
+		for(Name name : this.getActiveNames()) {
+			nameMap.put(name.getId(), name);
+		}
+		return JsonConverter.convert(nameMap);
 	}
 	
 	public List<Address> getActiveAddresses() {

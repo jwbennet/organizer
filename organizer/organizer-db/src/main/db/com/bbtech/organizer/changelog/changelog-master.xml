@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+	<property name="autoIncrement" value="true" dbms="mysql" />
+	<property name="autoIncrement" value="false" dbms="oracle" />
+
+	<changeSet id="init" author="jawbenne" context="init">
+		<createTable tableName="notez">
+			<column name="id" type="BIGINT" autoIncrement="${autoIncrement}" defaultValueComputed="note_id.nextval">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="text" type="TEXT" />
+			<column name="crte_dt" type="DATETIME" />
+			<column name="updt_dt" type="TIMESTAMP" />
+		</createTable>
+		<createSequence sequenceName="note_id" />
+	</changeSet>
+</databaseChangeLog>
+
+<!-- 
+CREATE TABLE notes (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    text TEXT,
+    crte_dt DATETIME,
+    updt_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE people (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(40) NOT NULL,
+    active VARCHAR(1) NOT NULL,
+    crte_dt DATETIME,
+    updt_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE phone_numbers (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    type VARCHAR(5) NOT NULL,
+    number VARCHAR(20) NOT NULL,
+    extension VARCHAR(8),
+    prm VARCHAR(1) NOT NULL,
+    active VARCHAR(1) NOT NULL,
+    crte_dt DATETIME,
+    updt_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE email_addresses (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    type VARCHAR(5) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    prm VARCHAR(1) NOT NULL,
+    active VARCHAR(1) NOT NULL,
+    crte_dt DATETIME,
+    updt_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE names (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    type VARCHAR(5) NOT NULL,
+    first_nm VARCHAR(40) NOT NULL,
+    middle_nm VARCHAR(40),
+    last_nm VARCHAR(80) NOT NULL,
+    prm VARCHAR(1) NOT NULL,
+    active VARCHAR(1) NOT NULL,
+    crte_dt DATETIME,
+    updt_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE addresses (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    type VARCHAR(5) NOT NULL,
+    line1 VARCHAR(45) NOT NULL,
+    line2 VARCHAR(45),
+    line3 VARCHAR(45),
+    city VARCHAR(30) NOT NULL,
+    state VARCHAR(2) NOT NULL,
+    zip VARCHAR(10) NOT NULL,
+    prm VARCHAR(1) NOT NULL,
+    active VARCHAR(1) NOT NULL,
+    crte_dt DATETIME,
+    updt_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE logs (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    type VARCHAR(5) NOT NULL,
+    subject VARCHAR(40) NOT NULL,
+    location VARCHAR(40),
+    agenda TEXT,
+    dt DATETIME NOT NULL,
+    duration INT,
+    crte_dt DATETIME,
+    updt_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+ -->

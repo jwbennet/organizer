@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,7 +20,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.bbtech.organizer.server.entities.Note;
 import com.bbtech.organizer.server.services.NoteService;
-import com.bbtech.organizer.server.services.PersonService;
 import com.bbtech.organizer.server.util.JsonResponse;
 import com.bbtech.organizer.server.util.MimeTypes;
 import com.google.common.base.CaseFormat;
@@ -35,9 +35,6 @@ public class NoteController {
 	@Autowired
 	private NoteService noteService;
 
-	@Autowired
-	private PersonService personService;
-
 	@RequestMapping(value = "", method = RequestMethod.POST, consumes = MimeTypes.JSON)
 	@Transactional
 	public @ResponseBody JsonResponse create(@RequestBody @Valid Note note, BindingResult result) {
@@ -48,7 +45,7 @@ public class NoteController {
 		}
 	}
 
-	@RequestMapping(value = "{noteId}", method = RequestMethod.GET)
+	@RequestMapping(value = "{noteId}/display", method = RequestMethod.GET)
 	@Transactional
 	public ModelAndView display(@PathVariable Long noteId, ModelAndView model) {
 		Note note = noteService.getNote(noteId);
@@ -57,7 +54,7 @@ public class NoteController {
 		return model;
 	}
 
-	@RequestMapping(value = "{noteId}.json", method = RequestMethod.GET, produces = MimeTypes.JSON)
+	@RequestMapping(value = "{noteId}", method = RequestMethod.GET, produces = MimeTypes.JSON)
 	@Transactional
 	public @ResponseBody Note getNoteJson(@PathVariable Long noteId) {
 		Note note = noteService.getNote(noteId);
@@ -96,9 +93,9 @@ public class NoteController {
 		return new JsonResponse(0L, false, message, errors);
 	}
 
-//	@ExceptionHandler(Exception.class)
-//	public String handleMyException(Exception exception) {
-//		exception.printStackTrace();
-//		return "index";
-//	}
+	@ExceptionHandler(Exception.class)
+	public String handleMyException(Exception exception) {
+		exception.printStackTrace();
+		return "index";
+	}
 }

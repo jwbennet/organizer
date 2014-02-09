@@ -10,8 +10,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Version;
 
-import flexjson.JSONSerializer;
-
 @Entity
 @Table(name="samples") 
 public class Sample implements Serializable {
@@ -32,11 +30,6 @@ public class Sample implements Serializable {
 	@Version
     @Column(name="VER_NBR")
     protected Long versionNumber;
-
-	
-    public String toJson() {
-        return new JSONSerializer().exclude("*.class").serialize(this);
-    }
 	
 	public Long getId() {
 		return id;

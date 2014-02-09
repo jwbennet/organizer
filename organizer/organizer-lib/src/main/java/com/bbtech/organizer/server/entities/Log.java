@@ -11,12 +11,14 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.Type;
@@ -24,7 +26,17 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 
 import com.bbtech.organizer.server.dao.LogDao;
+import com.bbtech.organizer.server.deserializers.DateTimeDeserializer;
+import com.bbtech.organizer.server.deserializers.NoteDeserializer;
+import com.bbtech.organizer.server.deserializers.PersonDeserializer;
+import com.bbtech.organizer.server.serializers.DateTimeSerializer;
+import com.bbtech.organizer.server.serializers.NoteSerializer;
+import com.bbtech.organizer.server.serializers.PersonSerializer;
 import com.bbtech.organizer.server.util.Formats;
+import com.bbtech.organizer.server.util.ServiceLocator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 @Entity
 @Table(name="logs")
@@ -53,8 +65,13 @@ public class Log {
 	@Column(name="agenda")
 	private String agenda;
 	
+	@Transient
+	private String agendaWikiText;
+	
 	@Column(name="dt")
 	@Type(type="org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+	@JsonSerialize(using = DateTimeSerializer.class)
+	@JsonDeserialize(using = DateTimeDeserializer.class)
 	private DateTime date;
 	
 	@Column(name="duration")
@@ -62,10 +79,14 @@ public class Log {
 
 	@Column(name="crte_dt")
 	@Type(type="org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+	@JsonSerialize(using = DateTimeSerializer.class)
+	@JsonDeserialize(using = DateTimeDeserializer.class)
 	private DateTime creationDate;
 
 	@Column(name="updt_dt")
 	@Type(type="org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+	@JsonSerialize(using = DateTimeSerializer.class)
+	@JsonDeserialize(using = DateTimeDeserializer.class)
 	private DateTime updateDate;
 	
 	@OneToMany(fetch=FetchType.LAZY, cascade=CascadeType.ALL)
@@ -73,13 +94,17 @@ public class Log {
 		name="log_to_person",
 		joinColumns=@JoinColumn(name="log_id"),
 		inverseJoinColumns=@JoinColumn(name="person_id"))
+	@JsonSerialize(contentUsing = PersonSerializer.class)
+	@JsonDeserialize(contentUsing = PersonDeserializer.class)
 	private List<Person> attendees = new ArrayList<Person>();
 	
-	@OneToMany(fetch=FetchType.LAZY, cascade=CascadeType.ALL)
+	@ManyToMany(fetch=FetchType.LAZY, cascade=CascadeType.ALL)
 	@JoinTable(
 		name="log_to_note",
 		joinColumns=@JoinColumn(name="log_id"),
 		inverseJoinColumns=@JoinColumn(name="note_id"))
+	@JsonSerialize(contentUsing = NoteSerializer.class)
+	@JsonDeserialize(contentUsing = NoteDeserializer.class)
 	private List<Note> notes = new ArrayList<Note>();
 	
 	@PrePersist
@@ -91,11 +116,13 @@ public class Log {
 		}
 	}
 	
+	@JsonIgnore
 	public String getStartTime() {
 		DateTime start = this.getDate();
 		return start.toString(Formats.TIME_FORMAT);
 	}
 	
+	@JsonIgnore
 	public String getEndTime() {
 		int duration = this.getDuration();
 		if(duration > 0) {
@@ -105,6 +132,12 @@ public class Log {
 		return this.getStartTime();
 	}
 	
+	@JsonIgnore
+	public String getDisplayDate() {
+		return this.getDate().toString(Formats.DATE_FORMAT);
+	}
+	
+	@JsonIgnore
 	public String getDisplayTimeRange() {
 		String startTime = this.getStartTime();
 		String endTime = this.getEndTime();
@@ -115,12 +148,20 @@ public class Log {
 		}
 	}
 	
+	@JsonIgnore
 	public String getDisplayAttendees() {
 		List<String> names = new ArrayList<String>(this.getAttendees().size());
 		for(Person person : attendees) {
 			names.add(person.getDisplayName());
 		}
 		return StringUtils.join(names, ", ");
+	}
+	
+	public String getAgendaWikiText() {
+		if(this.agendaWikiText == null) {
+			this.agendaWikiText = ServiceLocator.getWikiService().parse(this.getAgenda());
+		}
+		return agendaWikiText;
 	}
 
 	public Long getId() {

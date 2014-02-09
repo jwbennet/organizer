@@ -22,8 +22,10 @@ import org.joda.time.DateTime;
 
 import com.bbtech.organizer.server.dao.NoteDao;
 import com.bbtech.organizer.server.deserializers.DateTimeDeserializer;
+import com.bbtech.organizer.server.deserializers.LogDeserializer;
 import com.bbtech.organizer.server.deserializers.PersonDeserializer;
 import com.bbtech.organizer.server.serializers.DateTimeSerializer;
+import com.bbtech.organizer.server.serializers.LogSerializer;
 import com.bbtech.organizer.server.serializers.PersonSerializer;
 import com.bbtech.organizer.server.util.JsonConverter;
 import com.bbtech.organizer.server.util.ServiceLocator;
@@ -69,6 +71,15 @@ public class Note {
 	@JsonSerialize(using = PersonSerializer.class)
 	@JsonDeserialize(using = PersonDeserializer.class)
 	private Person person;
+	
+	@ManyToOne(fetch=FetchType.LAZY, cascade=CascadeType.ALL)
+	@JoinTable(
+			name="log_to_note",
+			joinColumns=@JoinColumn(name="note_id"),
+			inverseJoinColumns=@JoinColumn(name="log_id"))
+	@JsonSerialize(contentUsing = LogSerializer.class)
+	@JsonDeserialize(contentUsing = LogDeserializer.class)
+	private Log log;
 
 	@Transient
 	private String wikiText;
@@ -125,6 +136,14 @@ public class Note {
 
 	public void setPerson(Person person) {
 		this.person = person;
+	}
+
+	public Log getLog() {
+		return log;
+	}
+
+	public void setLog(Log log) {
+		this.log = log;
 	}
 
 	public String getWikiText() {

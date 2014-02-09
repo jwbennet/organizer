@@ -2,12 +2,11 @@
 <%@ include file="/WEB-INF/jsp/logs/tldHeader.jsp"%>
 <%@ include file="/WEB-INF/jsp/people/tldHeader.jsp"%>
 
-<%@ attribute name="people" required="true" description="The people to display" type="java.util.List" %>
+<%@ attribute name="people" required="true" type="java.util.List" %>
 
-		<ul id="log-form-holder" data-role="listview" data-inset="true" data-theme="c" data-dividertheme="b">
-			<li id="log-form-container">
+		<ul id="log-form-holder" data-role="listview" data-inset="true" data-theme="c" data-dividertheme="b" style="display: none;">
+			<li id="log-form-container" style="display: none;">
 				<form id="log-form" data-ajax="false" onsubmit="return false;">
-					<input type="hidden" name="date" value="" />
     				<div data-role="fieldcontain">
 						<label for="log-form-type"><strong>Type:</strong></label>
 						<select name="type" id="log-form-type" data-native-menu="false">

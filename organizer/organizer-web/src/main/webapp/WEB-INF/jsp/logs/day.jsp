@@ -2,6 +2,7 @@
 <%@ include file="/WEB-INF/jsp/logs/tldHeader.jsp"%>
 <t:page prefix="logs" title="Logs">
 <jsp:body>
+<log:form-js logsJson="${logsJson}" />
 <div id="log-messages" style="height: 20px;">
 	<div id="log-success-message" class="success-message" style="display: none;"></div>
 	<div id="log-error-message" class="error-message" style="display: none;"></div>

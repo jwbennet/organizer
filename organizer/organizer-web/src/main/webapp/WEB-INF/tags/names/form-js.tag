@@ -1,41 +1,42 @@
 <%@ tag language="java" pageEncoding="UTF-8"%>
 <%@ include file="/WEB-INF/jsp/people/tldHeader.jsp"%>
+
+<%@ attribute name="namesJson" required="false" description="The names include as a model" %>
+
 <script type="text/javascript">
-function submitNameForm(id, callback) {
-	var data;
-	if(id) {
-		data = $('#name-form-' + id).formSerialize();
+<c:choose>
+<c:when test="${not empty namesJson}">
+var namesList = ${namesJson};
+</c:when>
+<c:otherwise>
+var namesList = {};
+</c:otherwise>
+</c:choose>
+var baseNameUrl = '${pageContext.request.contextPath}/names';
+function updateNameCallback(resp) {
+	if(resp.success) {
+		$.ajax({
+			type: 'GET',
+			url: baseNameUrl + '/' + resp.id + '/display',
+			success:
+				function(data) {
+					var id = resp.id;
+					$('#name-' + id).remove();
+					$(data).insertAfter('#name-form-container');
+					cancelNameForm();
+					$('#name-' + id).trigger('create');
+					$('#name-' + id).trigger('refresh');
+					if(resp.object.primary) {
+						setDisplayName(id);
+					}
+					nameSuccessMessage(resp.message);
+				},
+			error: nameFormError
+		});
+		namesList[resp.id] = resp.object;
 	} else {
-		data = $('#name-form').formSerialize();
+		nameErrorMessage(resp.message);
 	}
-	$.ajax({
-		type: 'POST',
-		url: '${pageContext.request.contextPath}/names/update',
-		data: data,
-		success: callback,
-		error: nameFormError
-	});
-}
-function updateNameCallback(data) {
-	var resp = $.parseJSON(data);
-	$.ajax({
-		type: 'GET',
-		url: '${pageContext.request.contextPath}/names/' + resp.id,
-		success:
-			function(data) {
-				var id = resp.id;
-				$('#name-' + id).remove();
-				$(data).insertAfter('#name-form-container');
-				cancelNameForm();
-				$('#name-' + id).trigger('create');
-				$('#name-' + id).trigger('refresh');
-				if($('#name-primary-' + id).val() == "true") {
-					setDisplayName(id);
-				}
-				nameSuccessMessage(resp.message);
-			},
-		error: nameFormError
-	});
 }
 function setDisplayName(id) {
 	var name = $('#display-name-' + id).text();
@@ -56,30 +57,38 @@ function createName() {
 function submitNewName() {
 	hideNameMessages();
 	$('#names-not-found').remove();
-	submitNameForm(0, updateNameCallback);
+	var data = JSON.stringify($.extend({primary: false}, $('#name-form').serializeObject()));
+	$.ajax({ type: 'POST', url: baseNameUrl, contentType: 'application/json', data: data, success: updateNameCallback, error: nameFormError });
 	return false;
 }
 function selectPrimaryName(id) {
-	$('#name-primary-' + id).val('true');
-	submitNameForm(id, selectPrimaryNameCallback);
+	namesList[id].primary = true;
+	var data = JSON.stringify(namesList[id]);
+	$.ajax({ type: 'PUT', url: baseNameUrl + '/' + id, contentType: 'application/json', data: data, success: selectPrimaryNameCallback, error: nameFormError });
 }
-function selectPrimaryNameCallback(data) {
-	var resp = $.parseJSON(data);
+function selectPrimaryNameCallback(resp) {
 	if(resp.success) {
 	 	var id = resp.id;
 		$('.primary-name-selector').each(function() { $(this).removeClass('ui-btn-up-' + $(this).attr('data-theme')).addClass('ui-btn-up-c').attr('data-theme', 'c'); });
-		$('[id^=name-primary]').each(function() { $(this).val('false'); });
 		$('#primary-name-selector-' + id).removeClass('ui-btn-up-c').addClass('ui-btn-up-e').attr('data-theme', 'e');
-		$('#name-primary-' + id).val('true');
+		for(var index in namesList) {
+			if(namesList[index].id == id) {
+				namesList[index].primary = true;
+			} else {
+				namesList[index].primary = false;
+			}
+		}
 		setDisplayName(id);
+	} else {
+		nameErrorMessage(resp.message);
 	}
 }
 function editName(id) {
 	cancelNameForm();
-	$('#name-form-type').val($('#name-type-' + id).val()).selectmenu('refresh');
-	$('#name-form-first-nm').val($('#name-first-nm-' + id).val());
-	$('#name-form-middle-nm').val($('#name-middle-nm-' + id).val());
-	$('#name-form-last-nm').val($('#name-last-nm-' + id).val());
+	$('#name-form-type').val(namesList[id].type).selectmenu('refresh');
+	$('#name-form-first-nm').val(namesList[id].firstName);
+	$('#name-form-middle-nm').val(namesList[id].middleName);
+	$('#name-form-last-nm').val(namesList[id].lastName);
 	$('#name-form-submit').bind('click', function() { submitEditName(id); });
 	$('#name-form-cancel').bind('click', function() { cancelNameForm(); });
 	$('#name-form-container').insertAfter('#name-' + id);
@@ -90,27 +99,18 @@ function editName(id) {
 	$('#name-form-first-nm').focus();
 }
 function submitEditName(id) {
-	$('#name-type-' + id).val($('#name-form-type').val());
-	$('#name-first-nm-' + id).val($('#name-form-first-nm').val());
-	$('#name-middle-nm-' + id).val($('#name-form-middle-nm').val());
-	$('#name-last-nm-' + id).val($('#name-form-last-nm').val());
-	submitNameForm(id, updateNameCallback);
+	var data = JSON.stringify($.extend({}, namesList[id], $('#name-form').serializeObject()));
+	$.ajax({ type: 'PUT', url: baseNameUrl + '/' + id, contentType: 'application/json', data: data, success: updateNameCallback, error: nameFormError });
 	return false;
 }
 function confirmDeleteName(id) {
 	$('#delete-name-confirm').bind('click', function () { deleteName(id); } );
 }
 function deleteName(id) {
-	$.ajax({
-		type: 'DELETE',
-		url: '${pageContext.request.contextPath}/names/' + id,
-		success: deleteNameCallback,
-		error: nameFormError
-	});
+	$.ajax({ type: 'DELETE', url: baseNameUrl + '/' + id, success: deleteNameCallback, error: nameFormError });
 	return false;
 }
-function deleteNameCallback(data) {
-	var resp = $.parseJSON(data);
+function deleteNameCallback(resp) {
 	if(resp.success) {
 		var id = resp.id;
 		$('#name-' + id).delay(500).fadeOut(400, function() { $('#name-' + id).remove(); $('#name-list').listview('refresh'); });

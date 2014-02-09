@@ -12,7 +12,7 @@
 <address:form-dialogs />
 </jsp:attribute>
 <jsp:body>
-		<name:form-js />
+		<name:form-js namesJson="${person.namesJson}" />
 		<div id="name-messages" style="height: 20px;">
 			<div id="name-success-message" class="success-message" style="display: none;"></div>
 			<div id="name-error-message" class="error-message" style="display: none;"></div>

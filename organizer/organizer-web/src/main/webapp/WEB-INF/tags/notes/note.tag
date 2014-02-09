@@ -1,7 +1,7 @@
 <%@ tag language="java" pageEncoding="UTF-8"%>
 <%@ include file="/WEB-INF/jsp/notes/tldHeader.jsp"%>
 
-<%@ attribute name="note" required="true" description="The note to display" type="com.bbtech.organizer.server.entities.Note" %>
+<%@ attribute name="note" required="true" type="com.bbtech.organizer.server.entities.Note" %>
 
 			<li id="note-${note.id}" class="note-container">
 				<div id="display-note-${note.id}" data-role="none" style="width: 50%; float: left;">

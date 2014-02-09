@@ -6,9 +6,8 @@
 		<ul id="name-form-holder" data-role="listview" data-inset="true" data-theme="c" data-dividertheme="b" style="display: none;">
 			<li id="name-form-container" style="display: none;">
 				<form id="name-form" data-ajax="false" onsubmit="return false;">
-					<input type="hidden" id="name-form-person-id" name="person.id" value="${personId}" />
+					<input type="hidden" id="name-form-person-id" name="person" value="${personId}" />
 					<input type="hidden" id="name-form-active" name="active" value="true" />
-					<input type="hidden" id="name-form-primary" name="primary" value="false" />
 					<div data-role="fieldcontain">
 						<label for="name-form-type"><strong>Type:</strong></label>
 						<select name="type" id="name-form-type" data-native-menu="false">

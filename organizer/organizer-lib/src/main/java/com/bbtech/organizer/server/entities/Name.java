@@ -19,6 +19,13 @@ import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
 import com.bbtech.organizer.server.dao.NameDao;
+import com.bbtech.organizer.server.deserializers.DateTimeDeserializer;
+import com.bbtech.organizer.server.deserializers.PersonDeserializer;
+import com.bbtech.organizer.server.serializers.DateTimeSerializer;
+import com.bbtech.organizer.server.serializers.PersonSerializer;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 @Entity
 @Table(name="names")
@@ -60,10 +67,14 @@ public class Name {
 	
 	@Column(name="crte_dt")
 	@Type(type="org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+	@JsonSerialize(using = DateTimeSerializer.class)
+	@JsonDeserialize(using = DateTimeDeserializer.class)
 	private DateTime creationDate;
 	
 	@Column(name="updt_dt")
 	@Type(type="org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+	@JsonSerialize(using = DateTimeSerializer.class)
+	@JsonDeserialize(using = DateTimeDeserializer.class)
 	private DateTime updateDate;
 	
 	@ManyToOne(fetch=FetchType.LAZY, cascade=CascadeType.ALL)
@@ -71,6 +82,8 @@ public class Name {
 		name="person_to_name",
 		joinColumns=@JoinColumn(name="name_id"),
 		inverseJoinColumns=@JoinColumn(name="person_id"))
+	@JsonSerialize(using = PersonSerializer.class)
+	@JsonDeserialize(using = PersonDeserializer.class)
 	private Person person;
 	
 	@PrePersist
@@ -82,14 +95,17 @@ public class Name {
 		}
 	}
 
+	@JsonIgnore
 	public String getDisplayName() {
 		return this.getFirstName() + " " + this.getLastName();
 	}
 	
+	@JsonIgnore
 	public String getCompositeName() {
 		return this.getLastName() + ", " + this.getFirstName() + (this.getMiddleName() == null ? "" : " " + this.getMiddleName().substring(0, 1) + ".");
 	}
 	
+	@JsonIgnore
 	public String getFullName() {
 		return this.getFirstName() + (this.getMiddleName() == null ? "" : " " + this.getMiddleName()) + " " + this.getLastName();
 	}
